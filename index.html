@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Dost - Mental Health Chatbot</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #a8edea, #fed6e3);
+            margin: 0;
+        }
+        .chat-container {
+            width: 450px;
+            height: 600px;
+            background: white;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            position: relative;
+        }
+        .chat-header {
+            background: linear-gradient(90deg, #ff758c, #ff7eb3);
+            color: white;
+            text-align: center;
+            padding: 15px;
+            font-size: 22px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        .chat-box {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            background: url('https://source.unsplash.com/450x600/?nature,calm') no-repeat center center;
+            background-size: cover;
+        }
+        .message {
+            max-width: 75%;
+            padding: 12px;
+            border-radius: 15px;
+            margin: 6px 0;
+            font-size: 14px;
+            position: relative;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        .user {
+            background: #ffdde1;
+            color: #333;
+            align-self: flex-end;
+        }
+        .bot {
+            background: #d4fc79;
+            color: black;
+            align-self: flex-start;
+        }
+        .chat-input {
+            display: flex;
+            border-top: 1px solid #ddd;
+            padding: 10px;
+            background: white;
+        }
+        input {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            outline: none;
+            border-radius: 8px;
+            font-size: 14px;
+            background: #f2f2f2;
+        }
+        button {
+            background: #ff758c;
+            color: white;
+            border: none;
+            padding: 12px 15px;
+            cursor: pointer;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-left: 8px;
+            transition: 0.3s;
+        }
+        button:hover {
+            background: #ff5f6d;
+        }
+        .video-container {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            text-align: center;
+        }
+        .video-container video {
+            width: 100px;
+            height: auto;
+            border-radius: 10px;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .typing-indicator {
+            display: none;
+            font-size: 14px;
+            color: #666;
+            padding: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">Virtual Dost</div>
+        <div class="chat-box" id="chat-box"></div>
+        <div class="typing-indicator" id="typing-indicator">Virtual Dost is typing...</div>
+        <div class="chat-input">
+            <input type="text" id="user-input" placeholder="Type your message..." onkeypress="handleKeyPress(event)">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+        <div class="video-container">
+            <video autoplay loop muted>
+                <source src="https://www.videvo.net/videvo_files/converted/2016_10/preview/160502_06_Dolly_Sky_1080p.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        </div>
+    </div>
+    
+    <script>
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+        
+        function sendMessage() {
+            let userText = document.getElementById("user-input").value;
+            let chatBox = document.getElementById("chat-box");
+            let typingIndicator = document.getElementById("typing-indicator");
+
+            if (userText.trim() !== "") {
+                let userDiv = document.createElement("div");
+                userDiv.classList.add("message", "user");
+                userDiv.innerText = "You: " + userText;
+                chatBox.appendChild(userDiv);
+                chatBox.scrollTop = chatBox.scrollHeight;
+                document.getElementById("user-input").value = "";
+                
+                typingIndicator.style.display = "block";
+
+                fetch("/get", {
+                    method: "POST",
+                    body: new URLSearchParams({ msg: userText }),
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" }
+                })
+                .then(response => response.text())
+                .then(botResponse => {
+                    typingIndicator.style.display = "none";
+                    let botDiv = document.createElement("div");
+                    botDiv.classList.add("message", "bot");
+                    botDiv.innerText = "Virtual Dost: " + botResponse;
+                    chatBox.appendChild(botDiv);
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                });
+            }
+        }
+    </script>
+</body>
+</html>
